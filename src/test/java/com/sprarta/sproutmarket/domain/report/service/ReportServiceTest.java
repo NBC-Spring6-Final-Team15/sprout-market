@@ -1,4 +1,4 @@
-package com.sprarta.sproutmarket.report.service;
+package com.sprarta.sproutmarket.domain.report.service;
 
 import com.sprarta.sproutmarket.domain.item.entity.Item;
 import com.sprarta.sproutmarket.domain.item.repository.ItemRepository;

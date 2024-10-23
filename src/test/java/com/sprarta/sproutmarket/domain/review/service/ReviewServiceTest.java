@@ -1,4 +1,4 @@
-package com.sprarta.sproutmarket.review.service;
+package com.sprarta.sproutmarket.domain.review.service;
 
 
 import com.sprarta.sproutmarket.domain.category.entity.Category;
