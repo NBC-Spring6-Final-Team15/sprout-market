@@ -22,8 +22,9 @@ public class Trade extends Timestamped {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    /*
-    거래 상태를 처음에는 WAITING, RESERVED,SOLD 만 생각했는데
-    거래 생성, 수락/거절, 완료/취소로 나눠야하지 않을까 추가 논의 필요
-     */
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TradeStatus tradeStatus = TradeStatus.WAITING;
+
 }
