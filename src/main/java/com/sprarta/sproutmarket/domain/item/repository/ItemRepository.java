@@ -15,8 +15,7 @@ import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    @Query("SELECT i FROM Item i WHERE i.id = :id AND i.seller.id = :sellerId")
-    Optional<Item> findByIdAndSellerId(@Param("id") Long id, @Param("sellerId") Long sellerId);
+    Optional<Item> findByIdAndSeller(@Param("id") Long id, @Param("seller") User seller);
 
     @Query("SELECT i FROM Item i " +
         "JOIN FETCH i.category " +
