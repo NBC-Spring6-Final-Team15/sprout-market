@@ -29,7 +29,7 @@ public class AuthService {
     public SignupResponse signup(SignupRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new ApiException(ErrorStatus.NOT_FOUND_EMAIL);
+            throw new ApiException(ErrorStatus.BAD_REQUEST_EMAIL);
         }
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());

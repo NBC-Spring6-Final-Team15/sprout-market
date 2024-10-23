@@ -40,13 +40,13 @@ public class ReportService {
                 user,
                 item
         );
-        Report savedReport = reportRepository.save(report);
+        reportRepository.save(report);
 
         return new ReportResponseDto(
-                savedReport.getId(),
-                savedReport.getItem().getId(),
-                savedReport.getReportingReason(),
-                savedReport.getReportStatus()
+                report.getId(),
+                report.getItem().getId(),
+                report.getReportingReason(),
+                report.getReportStatus()
         );
 
     }

@@ -2,6 +2,8 @@ package com.sprarta.sproutmarket.domain.report.controller;
 
 
 import com.sprarta.sproutmarket.domain.common.ApiResponse;
+import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponse;
+import com.sprarta.sproutmarket.domain.item.service.ItemService;
 import com.sprarta.sproutmarket.domain.report.dto.ReportRequestDto;
 import com.sprarta.sproutmarket.domain.report.dto.ReportResponseDto;
 import com.sprarta.sproutmarket.domain.report.service.ReportService;
@@ -21,6 +23,7 @@ import java.util.List;
 public class ReportController {
 
     private final ReportService reportService;
+    private final ItemService itemService;
 
     // 생성
     @PostMapping("/reports/{itemId}")
@@ -33,7 +36,7 @@ public class ReportController {
         return ResponseEntity.ok(ApiResponse.onSuccess(responseDto));
     }
 
-    // 단건 조회
+    // 신고 단건 조회
     @GetMapping("/reports/{reportId}")
     public ResponseEntity<ApiResponse<ReportResponseDto>> getReport(
             @PathVariable Long reportId
