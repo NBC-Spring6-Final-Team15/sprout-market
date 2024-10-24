@@ -43,7 +43,7 @@ public class ReviewController {
     }
 
     // 유저 리뷰 전체 조회
-    @GetMapping("/reviews/{userId}")
+    @GetMapping("/reviews/users/{userId}")
     public ResponseEntity<ApiResponse<List<ReviewResponseDto>>> getReviews(
             @PathVariable Long userId
     ) {
