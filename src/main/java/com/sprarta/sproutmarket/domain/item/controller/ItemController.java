@@ -117,8 +117,8 @@ public class ItemController {
      */
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<ApiResponse<Page<ItemResponseDto>>> getCategoryItems(@RequestParam(defaultValue = "1") int page,
-                                                                         @RequestParam(defaultValue = "10") int size,
-                                                                         @PathVariable Long categoryId){
+                                                                               @RequestParam(defaultValue = "10") int size,
+                                                                               @PathVariable Long categoryId){
         Page<ItemResponseDto> itemResponseDto = itemService.getCategoryItems(page, size, categoryId);
         return ResponseEntity.ok(ApiResponse.onSuccess(itemResponseDto));
     }
