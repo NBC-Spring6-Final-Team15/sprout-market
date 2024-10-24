@@ -1,4 +1,4 @@
-package com.sprarta.sproutmarket.config;
+package com.sprarta.sproutmarket.domain.tradeChat.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprarta.sproutmarket.domain.tradeChat.dto.TradeChatRequest;

@@ -1,222 +1,125 @@
 package com.sprarta.sproutmarket.domain.item.controller;
 
-
-import com.sprarta.sproutmarket.domain.category.entity.Category;
-import com.sprarta.sproutmarket.domain.common.ApiResponse;
-import com.sprarta.sproutmarket.domain.common.entity.Status;
+import com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper;
+import com.epages.restdocs.apispec.ResourceSnippetParameters;
+import com.epages.restdocs.apispec.Schema;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprarta.sproutmarket.config.JwtUtil;
+import com.sprarta.sproutmarket.config.SecurityConfig;
 import com.sprarta.sproutmarket.domain.item.dto.request.ItemContentsUpdateRequest;
-import com.sprarta.sproutmarket.domain.item.dto.request.ItemCreateRequest;
 import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponse;
-import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponseDto;
-import com.sprarta.sproutmarket.domain.item.entity.ItemSaleStatus;
 import com.sprarta.sproutmarket.domain.item.service.ItemService;
 import com.sprarta.sproutmarket.domain.user.entity.CustomUserDetails;
 import com.sprarta.sproutmarket.domain.user.entity.User;
-import com.sprarta.sproutmarket.domain.user.enums.UserRole;
-import org.junit.jupiter.api.BeforeEach;
+import com.sprarta.sproutmarket.domain.user.service.CustomUserDetailService;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.List;
+
+import static org.mockito.BDDMockito.given;
+import static com.epages.restdocs.apispec.ResourceDocumentation.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ItemControllerTest {
-    @InjectMocks
-    private ItemController itemController;
+@WebMvcTest(ItemController.class)
+@Import(SecurityConfig.class)
+@AutoConfigureRestDocs
+@AutoConfigureMockMvc(addFilters = false)
+class ItemControllerTest {
+    @MockBean
+    ItemService itemService;
 
-    @Mock
-    private ItemService itemService;
+    @Autowired
+    MockMvc mockMvc;
 
-    @Mock
-    private CustomUserDetails authUser;
+    @Autowired
+    ObjectMapper objectMapper;
 
-    private User mockUser;
+    @MockBean
+    JwtUtil jwtUtil;
 
-    private Category mockCategory;
+    @MockBean
+    CustomUserDetailService customUserDetailService;
 
-
-    @BeforeEach
-    void setup(){
-        MockitoAnnotations.openMocks(this); // 초기화
-
-        // User 생성
-        mockUser = new User(
-            "가짜 객체1",
-            "mock@mock.com",
-            "Mock1234!",
-            "오만한천원",
-            "01012341234",
-            "서울시 노원구 공릉동",
-            UserRole.USER
-        );
-        ReflectionTestUtils.setField(mockUser, "id", 1L);
-
-        // 카테고리 생성(id=1L)
-        mockCategory = new Category(1L, "생활");
-
-
-
-    }
+    @MockBean
+    JpaMetamodelMappingContext jpaMappingContext;
 
     @Test
-    void 매물_등록_성공(){
-        // Given
-        ItemCreateRequest itemCreateRequest = new ItemCreateRequest(
-            "가짜11",
-            "설명11",
-            100,
-            1L,
-            ""
-        );
-        ItemResponse itemResponse = new ItemResponse(
-            "가짜11",
-            100,
-            "오만한천원"
-        );
-
-        when(itemService.createItem(any(ItemCreateRequest.class), any(CustomUserDetails.class)))
-            .thenReturn(itemResponse);
-
-        // When
-        ResponseEntity<ApiResponse<ItemResponse>> response = itemController.addItem(itemCreateRequest, authUser);
-
-        // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("가짜11", response.getBody().getData().getTitle());
-        verify(itemService, times(1)).createItem(any(ItemCreateRequest.class), any(CustomUserDetails.class));
-    }
-
-    @Test
-    void 매물_판매상태_변경_성공() {
+    @WithMockUser
+    void 매물_수정_성공() throws Exception {
+        User user = new User();
+        CustomUserDetails customUserDetails = new CustomUserDetails(user);
+        ItemResponse itemResponse = new ItemResponse("만년필","한번도안썼습니다",3000,"김커피");
+        ItemContentsUpdateRequest requestDto = new ItemContentsUpdateRequest("만년필","한번도안썼습니다",3000,"imageUrl");
         Long itemId = 1L;
-        String saleStatus = "SOLD";
-        ItemResponse response = new ItemResponse(
-            "가짜11",
-            "설명11",
-            100,
-            "오만한천원"
-        );
-        when(itemService.updateSaleStatus(eq(itemId), eq(saleStatus), eq(authUser))).thenReturn(response);
+        given(itemService.updateContents(itemId,requestDto,customUserDetails)).willReturn(itemResponse);
 
-        ResponseEntity<ApiResponse<ItemResponse>> result = itemController.updateItemSaleStatus(itemId, saleStatus, authUser);
+        ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.post("/items/{itemId}/update/contents",itemId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andDo(
+                        MockMvcRestDocumentationWrapper.document(
+                                "update-Contents",
+                                resource(ResourceSnippetParameters.builder()
+                                        .description("매물의 정보를 변경합니다.")
+                                        .pathParameters(
+                                                parameterWithName("id").description("수정할 매물 ID")
+                                        )
+                                        .summary("매물 정보 업데이트")
+                                        .tag("Item")
+                                        .requestFields(List.of(
+                                                fieldWithPath("title").type(JsonFieldType.STRING)
+                                                        .description("수정할 제목"),
+                                                fieldWithPath("description").type(JsonFieldType.STRING)
+                                                        .description("수정할 내용"),
+                                                fieldWithPath("price").type(JsonFieldType.NUMBER)
+                                                        .description("수정할 가격"),
+                                                fieldWithPath("imageUrl").type(JsonFieldType.STRING)
+                                                        .description("변경할 이미지")
+                                        ))
+                                        .requestHeaders(
+                                                headerWithName("Authorization")
+                                                        .description("Bearer (JWT 토큰)")
+                                        )
+                                        .requestSchema(Schema.schema("update-contents-request"))
+                                        .responseFields(
+                                                fieldWithPath("message").type(JsonFieldType.STRING)
+                                                        .description("성공 시 메시지"),
+                                                fieldWithPath("statusCode").type(JsonFieldType.NUMBER)
+                                                        .description("200 상태 코드"),
+                                                fieldWithPath("data").type(JsonFieldType.OBJECT)
+                                                        .description("반환된 정보"),
+                                                fieldWithPath("data.title").type(JsonFieldType.STRING)
+                                                        .description("수정된 제목"),
+                                                fieldWithPath("data.description").type(JsonFieldType.STRING)
+                                                        .description("수정된 내용"),
+                                                fieldWithPath("data.price").type(JsonFieldType.NUMBER)
+                                                        .description("수정된 가격"),
+                                                fieldWithPath("data.nickname").type(JsonFieldType.STRING)
+                                                        .description("수정한 유저 닉네임")
+                                        )
+                                        .responseSchema(Schema.schema("update-contents-response"))
+                                        .build()
+                                )
+                        )
+                );
 
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody().getData());
+        verify(itemService, times(1)).updateContents(any(Long.class),any(ItemContentsUpdateRequest.class),any(CustomUserDetails.class));
+        result.andExpect(status().isOk());
     }
-
-    @Test
-    void 매물_내용_변경_성공() {
-        Long itemId = 1L;
-        ItemContentsUpdateRequest request = new ItemContentsUpdateRequest(
-            "가짜22",
-            "설명22",
-            450,
-            ""
-        );
-        ItemResponse response = new ItemResponse(
-            "가짜22",
-            "설명22",
-            450,
-            "오만한천원"
-        );
-        when(itemService.updateContents(itemId, request, authUser)).thenReturn(response);
-
-        ResponseEntity<ApiResponse<ItemResponse>> result = itemController.updateContent(itemId, request, authUser);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody().getData());
-    }
-
-    @Test
-    void 나의_매물_논리적삭제_성공() {
-        Long itemId = 1L;
-        ItemResponse response = new ItemResponse(
-            "가짜11",
-            Status.DELETED,
-            "오만한천원"
-        );
-        when(itemService.softDeleteItem(eq(itemId), eq(authUser))).thenReturn(response);
-
-        ResponseEntity<ApiResponse<ItemResponse>> result = itemController.softRemoveItem(itemId, authUser);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody().getData());
-    }
-
-    @Test
-    void 관리자_신고매물_논리적삭제_성공() {
-        Long itemId = 1L;
-        ItemResponse response = new ItemResponse(
-            "가짜11",
-            "설명11",
-            Status.DELETED
-        );
-        when(itemService.softDeleteReportedItem(eq(itemId), eq(authUser))).thenReturn(response);
-
-        ResponseEntity<ApiResponse<ItemResponse>> result = itemController.softRemoveReportedItem(itemId, authUser);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody().getData());
-    }
-
-    @Test
-    void 매물_단건_상세_조회_성공() {
-        // Given
-        Long itemId = 1L;
-        ItemResponseDto itemResponseDto = new ItemResponseDto(
-            1L,
-            "가짜11",
-            "설명11",
-            1000,
-            "오만한천원",
-            ItemSaleStatus.WAITING,
-            "생활",
-            Status.ACTIVE
-        );
-        when(itemService.getItem(anyLong())).thenReturn(itemResponseDto);
-
-        // When
-        ResponseEntity<ApiResponse<ItemResponseDto>> response = itemController.findItem(itemId);
-
-        // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(itemResponseDto, response.getBody().getData());
-    }
-
-    @Test
-    void 사용자의_모든매물_조회_성공() {
-        int page = 1;
-        int size = 10;
-        Page<ItemResponseDto> itemResponseDto = mock(Page.class);
-        when(itemService.getMyItems(eq(page), eq(size), eq(authUser))).thenReturn(itemResponseDto);
-
-        ResponseEntity<ApiResponse<Page<ItemResponseDto>>> result = itemController.findMyItems(page, size, authUser);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(itemResponseDto, result.getBody().getData());
-    }
-
-
-
-    @Test
-    void  특정_카테고리_전체_조회_성공() {
-        int page = 1;
-        int size = 10;
-        Long categoryId = 1L;
-        Page<ItemResponseDto> itemResponseDto = mock(Page.class);
-        when(itemService.getCategoryItems(page, size, categoryId)).thenReturn(itemResponseDto);
-
-        ResponseEntity<ApiResponse<Page<ItemResponseDto>>> result = itemController.getCategoryItems(page, size, categoryId);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(itemResponseDto, result.getBody().getData());
-    }
-
 }

@@ -6,6 +6,7 @@ import com.sprarta.sproutmarket.domain.common.ApiResponse;
 import com.sprarta.sproutmarket.domain.common.enums.ErrorStatus;
 import com.sprarta.sproutmarket.domain.common.exception.ApiException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class AdministrativeAreaController {
     public ResponseEntity<ApiResponse<String>> addGeoJson() {
         try {
             administrativeAreaService.insertGeoJsonData("json/HangJeongDong.geojson");
-            return ResponseEntity.ok(ApiResponse.createSuccess("ok",201,"DB에 성공적으로 geojson 파일이 삽입됐습니다."));
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.createSuccess("Created",201,"DB에 성공적으로 geojson 파일이 삽입됐습니다."));
         } catch (IOException e) {
             throw new ApiException(ErrorStatus.BAD_REQUEST_INVALID_FILE);
         }
@@ -35,7 +36,7 @@ public class AdministrativeAreaController {
      * @param requestDto : 위도,경도를 double 로 받는 DTO
      * @return : 행정동 String 반환
      */
-    @GetMapping("/test/getHJD")
+    @PostMapping("/test/getHJD")
     public ResponseEntity<ApiResponse<String>> getHMD(@RequestBody AdministrativeAreaRequestDto requestDto) {
         return ResponseEntity.ok
                 (ApiResponse.onSuccess(

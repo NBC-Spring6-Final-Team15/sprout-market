@@ -3,6 +3,8 @@ package com.sprarta.sproutmarket.domain.areas.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprarta.sproutmarket.domain.areas.entity.AdministrativeArea;
 import com.sprarta.sproutmarket.domain.areas.repository.AdministrativeAreaRepository;
+import com.sprarta.sproutmarket.domain.common.enums.ErrorStatus;
+import com.sprarta.sproutmarket.domain.common.exception.ApiException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.geojson.Feature;
@@ -128,7 +130,9 @@ public class AdministrativeAreaService {
      */
     public String findAdministrativeAreaByCoordinates(double longitude, double latitude) {
         String point = String.format("POINT(%f %f)",latitude, longitude);
-        return administrativeAreaRepository.findAdministrativeAreaByPoint(point);
+        return administrativeAreaRepository.findAdministrativeAreaByPoint(point).orElseThrow(
+                () -> new ApiException(ErrorStatus.NOT_FOUND_ADMINISTRATIVE_AREA)
+        );
     }
 
 }

@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -73,7 +74,7 @@ class AdministrativeAreaServiceTest {
         //예상 반환
         String expectedAreaName = "서울특별시 종로구";
         when(administrativeAreaRepository.findAdministrativeAreaByPoint(anyString()))
-                .thenReturn(expectedAreaName);
+                .thenReturn(Optional.of(expectedAreaName));
 
         // when
         administrativeAreaService.findAdministrativeAreaByCoordinates(requestDto.getLongitude(), requestDto.getLatitude());

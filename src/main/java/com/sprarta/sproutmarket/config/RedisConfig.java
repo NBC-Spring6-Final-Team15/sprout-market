@@ -1,5 +1,6 @@
 package com.sprarta.sproutmarket.config;
 
+import com.sprarta.sproutmarket.domain.tradeChat.service.RedisSubscriber;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
