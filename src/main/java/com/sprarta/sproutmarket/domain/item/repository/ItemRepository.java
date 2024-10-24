@@ -1,6 +1,8 @@
 package com.sprarta.sproutmarket.domain.item.repository;
 
+import com.sprarta.sproutmarket.domain.areas.dto.AdmNameDto;
 import com.sprarta.sproutmarket.domain.category.entity.Category;
+import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponse;
 import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponseDto;
 import com.sprarta.sproutmarket.domain.item.entity.Item;
 import com.sprarta.sproutmarket.domain.user.entity.CustomUserDetails;
@@ -11,6 +13,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
@@ -29,4 +32,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
         "JOIN FETCH i.category " +
         "WHERE i.category = :category")
     Page<Item> findByCategory(Pageable pageable, @Param("category") Category findCategory);
+
+    @Query("SELECT i FROM Item i JOIN FETCH i.seller WHERE i.seller.address IN :areaList")
+    Page<Item> findByAreaListAndUserArea(Pageable pageable, @Param("areaList") List<String> areaList);
 }

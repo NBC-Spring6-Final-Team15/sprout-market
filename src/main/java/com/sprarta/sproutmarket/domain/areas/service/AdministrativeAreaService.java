@@ -145,7 +145,7 @@ public class AdministrativeAreaService {
      * @param admNm : 행정동 이름 (예시 : 부산광역시 남구 대연1동)
      * @return : 주변 5km 행정동 이름 AdmNameDto 리스트 (예시 admName : 부산광역시 남구 용당동 << 들어있는 리스트)
      */
-    public List<AdmNameDto> findAdmNameListByAdmName(String admNm) {
+    public List<String> findAdmNameListByAdmName(String admNm) {
         AdministrativeArea foundArea = administrativeAreaRepository.findByAdmNm(admNm).orElseThrow(
                 () -> new ApiException(ErrorStatus.NOT_FOUND_ADMINISTRATIVE_AREA)
         );

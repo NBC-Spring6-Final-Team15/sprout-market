@@ -1,16 +1,18 @@
 package com.sprarta.sproutmarket.domain.item.service;
 
+import com.sprarta.sproutmarket.domain.areas.service.AdministrativeAreaService;
 import com.sprarta.sproutmarket.domain.category.entity.Category;
 import com.sprarta.sproutmarket.domain.category.service.CategoryService;
 import com.sprarta.sproutmarket.domain.common.entity.Status;
 import com.sprarta.sproutmarket.domain.common.enums.ErrorStatus;
 import com.sprarta.sproutmarket.domain.common.exception.ApiException;
+import com.sprarta.sproutmarket.domain.item.dto.request.FindItemsInMyAreaRequestDto;
+import com.sprarta.sproutmarket.domain.item.dto.request.ItemContentsUpdateRequest;
+import com.sprarta.sproutmarket.domain.item.dto.request.ItemCreateRequest;
 import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponse;
 import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponseDto;
 import com.sprarta.sproutmarket.domain.item.entity.Item;
 import com.sprarta.sproutmarket.domain.item.entity.ItemSaleStatus;
-import com.sprarta.sproutmarket.domain.item.dto.request.ItemContentsUpdateRequest;
-import com.sprarta.sproutmarket.domain.item.dto.request.ItemCreateRequest;
 import com.sprarta.sproutmarket.domain.item.repository.ItemRepository;
 import com.sprarta.sproutmarket.domain.user.entity.CustomUserDetails;
 import com.sprarta.sproutmarket.domain.user.entity.User;
@@ -20,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final CategoryService categoryService;
+    private final AdministrativeAreaService admAreaService;
 
 
     /**
@@ -274,9 +276,34 @@ public class ItemService {
         );
     }
 
+    /**
+     * 내 주변에 있는 매물을 조회하는 메서드입니다.
+     * 추후 논의를 통해 다른 조회 시에도 해당 기능을 합칠 예정입니다.
+     * @param authUser : 현재 인증받은 사용자
+     * @param requestDto : 페이지번호, 크기가 들어있는 requestDto, @valid 사용하기 위해 파라미터로 안 받고 DTO 로 받았습니다.
+     * @return 페이징해서 찾은 매물들 DTO 로 매핑해서 반환
+     */
+    public Page<ItemResponseDto> findItemsByMyArea (CustomUserDetails authUser, FindItemsInMyAreaRequestDto requestDto) {
+        //User.fromAuthUser 쓰면 User 안에 있는 Address를 못 불러와서 이렇게 꺼냈습니다.
+        User currentUser = userRepository.findById(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus.NOT_FOUND_USER));
+        String myArea = currentUser.getAddress();
 
+        List<String> areaList = admAreaService.findAdmNameListByAdmName(myArea);
+        Pageable pageable = PageRequest.of(requestDto.getPage()-1, requestDto.getSize());
+        Page<Item> result = itemRepository.findByAreaListAndUserArea(pageable,areaList);
 
-
+        return result.map(item -> new ItemResponseDto(
+                        item.getId(),
+                        item.getTitle(),
+                        item.getDescription(),
+                        item.getPrice(),
+                        item.getSeller().getNickname(),
+                        item.getItemSaleStatus(),
+                        item.getCategory().getName(),
+                        item.getStatus()
+                )
+        );
+    }
 
     /**
      * 주어진 id에 해당하는 Item을 찾고,

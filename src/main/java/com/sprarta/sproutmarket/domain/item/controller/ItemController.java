@@ -1,12 +1,15 @@
 package com.sprarta.sproutmarket.domain.item.controller;
 
 import com.sprarta.sproutmarket.domain.common.ApiResponse;
+import com.sprarta.sproutmarket.domain.item.dto.request.FindItemsInMyAreaRequestDto;
 import com.sprarta.sproutmarket.domain.item.dto.request.ItemContentsUpdateRequest;
 import com.sprarta.sproutmarket.domain.item.dto.request.ItemCreateRequest;
 import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponse;
 import com.sprarta.sproutmarket.domain.item.dto.response.ItemResponseDto;
+import com.sprarta.sproutmarket.domain.item.entity.Item;
 import com.sprarta.sproutmarket.domain.item.service.ItemService;
 import com.sprarta.sproutmarket.domain.user.entity.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -121,6 +124,15 @@ public class ItemController {
                                                                          @PathVariable Long categoryId){
         Page<ItemResponseDto> itemResponseDto = itemService.getCategoryItems(page, size, categoryId);
         return ResponseEntity.ok(ApiResponse.onSuccess(itemResponseDto));
+    }
+
+    /**
+     * 우리 동네 매물 조회
+     */
+    @GetMapping("/myAreas")
+    public ResponseEntity<ApiResponse<Page<ItemResponseDto>>> getMyAreasItems(@RequestBody @Valid FindItemsInMyAreaRequestDto requestDto,
+                                                                   @AuthenticationPrincipal CustomUserDetails authUser) {
+        return ResponseEntity.ok(ApiResponse.onSuccess(itemService.findItemsByMyArea(authUser, requestDto)));
     }
 
 }

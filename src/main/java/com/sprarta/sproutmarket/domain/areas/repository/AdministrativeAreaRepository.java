@@ -17,8 +17,8 @@ public interface AdministrativeAreaRepository extends JpaRepository<Administrati
             "WHERE ST_Contains(geometry, ST_GeomFromText(:point, 4326))", nativeQuery = true)
     Optional<String> findAdministrativeAreaByPoint(@Param("point") String point);
 
-    @Query("SELECT new com.sprarta.sproutmarket.domain.areas.dto.AdmNameDto(a.admNm) FROM AdministrativeArea a WHERE function('ST_Distance', a.admCenter, :center) <= 5000")
-    List<AdmNameDto> findAdministrativeAreasByAdmCenter(@Param("center")Point center);
+    @Query("SELECT a.admNm FROM AdministrativeArea a WHERE function('ST_Distance', a.admCenter, :center) <= 5000")
+    List<String> findAdministrativeAreasByAdmCenter(@Param("center")Point center);
 
     Optional<AdministrativeArea> findByAdmNm(String admNm);
 }

@@ -6,7 +6,6 @@ import com.epages.restdocs.apispec.Schema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprarta.sproutmarket.config.JwtUtil;
 import com.sprarta.sproutmarket.config.SecurityConfig;
-import com.sprarta.sproutmarket.domain.areas.dto.AdmNameDto;
 import com.sprarta.sproutmarket.domain.areas.dto.AdministrativeAreaRequestDto;
 import com.sprarta.sproutmarket.domain.areas.service.AdministrativeAreaService;
 import com.sprarta.sproutmarket.domain.user.service.CustomUserDetailService;
@@ -82,7 +81,7 @@ class AdministrativeAreaControllerTest {
                                                 fieldWithPath("data").type(JsonFieldType.STRING)
                                                         .description("성공했다는 메시지")
                                         ))
-                                        .responseSchema(Schema.schema("addGeoJson-success-Response"))
+                                        .responseSchema(Schema.schema("geojson-DB-추가-성공-응답"))
                                         .build())
                         )
                 );
@@ -119,7 +118,7 @@ class AdministrativeAreaControllerTest {
                                                 fieldWithPath("latitude").type(JsonFieldType.NUMBER)
                                                         .description("경도")
                                         ))
-                                        .requestSchema(Schema.schema("get-HJD-success-Request"))
+                                        .requestSchema(Schema.schema("행정동-조회-성공-요청"))
                                         .responseFields(List.of(
                                                 fieldWithPath("message").type(JsonFieldType.STRING)
                                                         .description("Ok"),
@@ -128,7 +127,7 @@ class AdministrativeAreaControllerTest {
                                                 fieldWithPath("data").type(JsonFieldType.STRING)
                                                         .description("행정구역('시도' '시군구' '읍면동')")
                                         ))
-                                        .responseSchema(Schema.schema("get-HJD-success-response"))
+                                        .responseSchema(Schema.schema("행정동-조회-성공-응답"))
                                         .build()
                                 )
                         )
@@ -143,9 +142,9 @@ class AdministrativeAreaControllerTest {
     @Test
     void 주변_행정동_조회_성공() throws Exception {
         String paramAdmNm = "경상남도 산청군 생초면";
-        List<AdmNameDto> listResult = new ArrayList<>();
-        AdmNameDto admNameDto1 = new AdmNameDto("경상남도 산청군 오부면");
-        AdmNameDto admNameDto2 = new AdmNameDto("경상남도 산청군 생초면");
+        List<String> listResult = new ArrayList<>();
+        String admNameDto1 = "경상남도 산청군 오부면";
+        String admNameDto2 = "경상남도 산청군 생초면";
         listResult.add(admNameDto1);
         listResult.add(admNameDto2);
         given(administrativeAreaService.findAdmNameListByAdmName(paramAdmNm)).willReturn(listResult);
@@ -166,12 +165,10 @@ class AdministrativeAreaControllerTest {
                                                         .description("성공 시 응답 메시지"),
                                                 fieldWithPath("statusCode")
                                                         .description("성공 시 응답 코드 : 200"),
-                                                fieldWithPath("data")
-                                                        .description("응답 본문"),
-                                                fieldWithPath("data[].admName")
+                                                fieldWithPath("data[]")
                                                         .description("행정동 이름")
                                         )
-                                        .responseSchema(Schema.schema("행정동리스트-성공-응답"))
+                                        .responseSchema(Schema.schema("행정동리스트-조회-성공-응답"))
                                         .build()
                                 )
 
@@ -179,7 +176,7 @@ class AdministrativeAreaControllerTest {
                 );
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("data[0].admName").value("경상남도 산청군 오부면"))
-                .andExpect(jsonPath("data[1].admName").value("경상남도 산청군 생초면"));
+                .andExpect(jsonPath("data[0]").value("경상남도 산청군 오부면"))
+                .andExpect(jsonPath("data[1]").value("경상남도 산청군 생초면"));
     }
 }

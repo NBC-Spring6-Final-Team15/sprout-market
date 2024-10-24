@@ -53,8 +53,8 @@ public class AdministrativeAreaController {
      * @return 행정동 이름 리스트 반환
      */
     @GetMapping("/test/getAreas")
-    public ResponseEntity<ApiResponse<List<AdmNameDto>>> getAreas(@RequestParam String admNm) {
-        List<AdmNameDto> areas = administrativeAreaService.findAdmNameListByAdmName(admNm);
+    public ResponseEntity<ApiResponse<List<String>>> getAreas(@RequestParam String admNm) {
+        List<String> areas = administrativeAreaService.findAdmNameListByAdmName(admNm);
         return ResponseEntity.ok(ApiResponse.onSuccess(areas));
     }
 }
